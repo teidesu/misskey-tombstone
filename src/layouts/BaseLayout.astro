@@ -1,0 +1,32 @@
+---
+interface Props {
+    class?: string
+    title?: string
+    withBack?: boolean
+}
+
+const {
+    title,
+    class: className = 'w-full flex flex-col items-center pa-4',
+    withBack,
+} = Astro.props
+---
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="generator" content={Astro.generator} />
+        <title>{title}</title>
+    </head>
+    <body class={className}>
+        {withBack && (
+            <div class="align-center mb-4 flex flex-row justify-center gap-4">
+                <a class="text-blue-500 underline hover:text-blue-800" href="/">Home</a>
+            </div>
+        )}
+        <slot />
+    </body>
+</html>

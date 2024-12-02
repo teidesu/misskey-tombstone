@@ -1,0 +1,58 @@
+---
+import { base64, utf8 } from '@fuman/utils'
+import { encryptBlob, prepareSecret } from '../crypto.ts'
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+const secret = import.meta.env.PRIVATE_POSTS_SECRET
+
+const sampleEncrypted = await encryptBlob(utf8.encoder.encode('meow :3'), await prepareSecret(secret))
+---
+
+<BaseLayout withBack title="Log in">
+    <div class="max-w-2xl flex flex-col gap-4">
+        <p class="hidden text-red-500" id="wrong-secret">
+            Wrong secret
+        </p>
+        <p>This is a misskey-tombstone instance. To see followers-only posts please log in.</p>
+        <div class="flex flex-col gap-4">
+            <input type="hidden" id="sample" value={base64.encode(sampleEncrypted)} />
+            <input
+                class="w-full border border-gray-200 rounded-lg px-4 py-2"
+                name="secret"
+                type="text"
+                placeholder="secret"
+                id="secret-input"
+            />
+            <button
+                class="rounded-lg bg-blue-500 px-4 py-2 text-white font-bold hover:bg-blue-800"
+                type="submit"
+                id="submit"
+            >
+                Log in
+            </button>
+        </div>
+    </div>
+
+<script>
+import { base64, utf8 } from '@fuman/utils'
+import { decryptBlob, prepareSecret } from '../crypto.ts'
+
+const secretInput = document.getElementById('secret-input') as HTMLInputElement
+const sampleEncrypted = base64.decode((document.getElementById('sample') as HTMLInputElement).value)
+
+document.getElementById('submit')!.addEventListener('click', async () => {
+    let decryptedSample: Uint8Array | undefined
+    try {
+        decryptedSample = await decryptBlob(sampleEncrypted, await prepareSecret(secretInput.value))
+    } catch {}
+
+    if (!decryptedSample || utf8.decoder.decode(decryptedSample) !== 'meow :3') {
+        document.getElementById('wrong-secret')!.classList.remove('hidden')
+        return
+    }
+
+    localStorage.setItem('secret', secretInput.value)
+    window.location.href = '/'
+})
+</script>
+</BaseLayout>

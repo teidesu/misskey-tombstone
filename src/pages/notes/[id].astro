@@ -1,0 +1,19 @@
+---
+import { Note } from '../../components/Note.tsx'
+import { notes } from '../../data.ts'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+
+export function getStaticPaths() {
+  return notes.map(note => ({
+    params: { id: note.id },
+  }))
+}
+
+const note = notes.find(note => note.id === Astro.params.id)
+---
+
+<BaseLayout title="Post" withBack>
+  {note
+  ? <Note client:idle note={note} />
+  : <h1>Note not found</h1>}
+</BaseLayout>

@@ -1,0 +1,70 @@
+---
+import { Note } from '../components/Note.tsx'
+import { notes } from '../data.ts'
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+export function getStaticPaths() {
+    const pageSize = 50
+    const pageCount = Math.ceil(notes.length / pageSize)
+
+    const paths = []
+    for (let i = 1; i <= pageCount; i++) {
+        paths.push({
+            params: { page: i.toString() },
+ })
+    }
+    return paths
+}
+
+
+const pageSize = 50
+const pageCount = Math.ceil(notes.length / pageSize)
+
+const { page } = Astro.params
+const pageNumber = Number.parseInt(page)
+
+const notesSlice = notes.slice((pageNumber - 1) * pageSize, pageNumber * pageSize)
+---
+
+<BaseLayout>
+    <div class="align-center mb-4 flex flex-row justify-center gap-4">
+        {pageNumber > 1 && (
+            <a class="text-blue-500 underline hover:text-blue-800" href={`/page${pageNumber - 1}`}>Prev</a>
+        )}
+        <span>{pageNumber} / {pageCount}</span>
+        {pageNumber < pageCount && (
+            <a class="text-blue-500 underline hover:text-blue-800" href={`/page${pageNumber + 1}`}>Next</a>
+        )}
+    </div>
+    <div class="mb-2 hidden max-w-2xl text-center" id="authed-warning">
+        <i>Followers-only posts are hidden because you're not logged in.</i>
+        <a class="text-blue-500 underline hover:text-blue-800" href="/auth">Log in</a>
+    </div>
+    <div class="max-w-3xl flex flex-col gap-4">
+        {notesSlice.map(note => (
+            <Note client:load note={note} />
+        ))}
+    </div>
+    <div class="mt-4 flex flex-row justify-center gap-4 align-middle">
+        {pageNumber > 1 && (
+            <a class="text-blue-500 underline hover:text-blue-800" href={`/page${pageNumber - 1}`}>Prev</a>
+        )}
+        <span>{pageNumber} / {pageCount}</span>
+        {pageNumber < pageCount && (
+            <a class="text-blue-500 underline hover:text-blue-800" href={`/page${pageNumber + 1}`}>Next</a>
+        )}
+    </div>
+    <hr class="my-4 h-px w-full bg-gray-200" />
+    <div class="text-center text-sm text-gray-500">
+        this is a <a class="text-blue-500 underline hover:text-blue-800" href="https://github.com/teidesu/misskey-tombstone">misskey-tombstone</a> instance
+        loaded up with data from a now defunct misskey instance
+    </div>
+    <script>
+        import { readStoredSecret } from '../crypto.ts'
+
+        const authedWarning = document.getElementById('authed-warning')
+        if (readStoredSecret() === null) {
+            authedWarning!.classList.remove('hidden')
+        }
+    </script>
+</BaseLayout>
